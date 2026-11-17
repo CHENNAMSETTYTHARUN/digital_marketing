@@ -9,7 +9,9 @@
   var KEY = 'marketly_custom_campaigns';
   var custom = [];
   try { custom = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
-  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  var api = apiBase ? (apiBase + '/api/v1') : '';
 
   function getAuthHeader() {
     var headers = { 'Content-Type': 'application/json' };
@@ -21,6 +23,7 @@
   }
 
   function loadBackendCampaigns() {
+    if (!api) return;
     fetch(api + '/campaigns', { headers: getAuthHeader(), credentials: 'include' })
       .then(function (res) { if (!res.ok) throw new Error('API offline'); return res.json(); })
       .then(function (data) {
@@ -39,7 +42,7 @@
 
   function inr(n) { return '₹' + n.toLocaleString('en-IN'); }
   function all() {
-    return custom.some(function(c) { return c.name === 'Summer Sale'; }) ? custom : custom.concat(BASE);
+    return custom.some(function (c) { return c.name === 'Summer Sale'; }) ? custom : custom.concat(BASE);
   }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function cell(text, cls) { return el('div', cls, text); }
@@ -126,24 +129,35 @@
     if (!name) { nameInput.setAttribute('aria-invalid', 'true'); setErr('c-name-error', 'Enter a campaign name.'); nameInput.focus(); return; }
     nameInput.removeAttribute('aria-invalid'); setErr('c-name-error', '');
     if (!picked.length) { setErr('c-channel-error', 'Choose at least one channel.'); return; }
-    var payload = { name: name, channels: picked.join(' + '), spent: 0, leads: 0, roi: 0, status: 'active' };
-    fetch(api + '/campaigns', {
-      method: 'POST',
-      credentials: 'include',
-      headers: getAuthHeader(),
-      body: JSON.stringify(payload)
-    }).then(function (res) {
-      if (!res.ok) throw new Error('Save failed');
-      return res.json();
-    }).then(function (saved) {
-      custom.unshift(saved);
-      try { localStorage.setItem(KEY, JSON.stringify(custom)); } catch (err) {}
-      render();
-    }).catch(function () {
+
+    var payload = { id: Date.now(), name: name, channels: picked.join(' + '), spent: 0, leads: 0, roi: 0, status: 'active' };
+
+    function saveLocally() {
       custom.unshift(payload);
       try { localStorage.setItem(KEY, JSON.stringify(custom)); } catch (err) {}
       render();
-    });
+    }
+
+    if (!api) {
+      saveLocally();
+    } else {
+      fetch(api + '/campaigns', {
+        method: 'POST',
+        credentials: 'include',
+        headers: getAuthHeader(),
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (!res.ok) throw new Error('Save failed');
+        return res.json();
+      }).then(function (saved) {
+        custom.unshift(saved);
+        try { localStorage.setItem(KEY, JSON.stringify(custom)); } catch (err) {}
+        render();
+      }).catch(function () {
+        saveLocally();
+      });
+    }
+
     dlg.close();
     if (window.MarketlyFX) window.MarketlyFX.confetti({ x: .5, y: .5, count: 90 });
     setFilter(filter === 'completed' ? 'active' : filter);

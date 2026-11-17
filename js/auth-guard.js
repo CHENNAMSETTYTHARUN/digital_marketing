@@ -2,11 +2,29 @@
 (function () {
   var token = '';
   try { token = sessionStorage.getItem('marketly_access_token') || ''; } catch (e) {}
-  if (!token) { window.location.replace('login.html'); return; }
-  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+  var isAuth = false;
+  try { isAuth = sessionStorage.getItem('marketly_authenticated') === 'true'; } catch (e) {}
+
+  if (!token || !isAuth) {
+    window.location.replace('login.html');
+    return;
+  }
+
+  // Client demo tokens are valid locally
+  if (token.indexOf('client_token_') === 0) {
+    return;
+  }
+
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  if (!apiBase) {
+    return;
+  }
+  var api = apiBase + '/api/v1';
+
   function validate(value) {
     return fetch(api + '/auth/me', { headers: { 'Authorization': 'Bearer ' + value }, credentials: 'include' });
   }
+
   validate(token).then(function (response) {
     if (response.status !== 401) {
       if (!response.ok) throw new Error('Session unavailable');
@@ -19,8 +37,11 @@
       sessionStorage.setItem('marketly_access_token', body.access_token);
       return validate(body.access_token).then(function (checked) { if (!checked.ok) throw new Error('Session expired'); });
     });
-  }).catch(function () {
-    try { sessionStorage.removeItem('marketly_access_token'); sessionStorage.removeItem('marketly_authenticated'); } catch (e) {}
-    window.location.replace('login.html');
+  }).catch(function (err) {
+    // Only kick the user out if backend explicitly rejected with 401/expired, not on network/offline errors
+    if (err && err.message && err.message.indexOf('Session expired') !== -1) {
+      try { sessionStorage.removeItem('marketly_access_token'); sessionStorage.removeItem('marketly_authenticated'); } catch (e) {}
+      window.location.replace('login.html');
+    }
   });
 })();

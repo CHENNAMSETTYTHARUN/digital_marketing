@@ -5,6 +5,9 @@
   var business = document.getElementById('business');
   var channels = document.getElementById('channels');
 
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  var api = apiBase ? (apiBase + '/api/v1') : '';
+
   function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
   function checked(name) {
     return Array.prototype.map.call(document.querySelectorAll('input[name="' + name + '"]:checked'), function (i) { return i.value; });
@@ -47,7 +50,19 @@
     if (!picked.length) { show('channel-error', 'Choose at least one channel to connect.'); return; }
     show('channel-error', '');
     save('marketly_channels', picked);
-    var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+
+    function finish() {
+      if (window.MarketlyFX) {
+        window.MarketlyFX.confetti({ x: .5, y: .7, count: 170 });
+        setTimeout(function () { window.location.href = 'dashboard.html'; }, 1100);
+      } else { window.location.href = 'dashboard.html'; }
+    }
+
+    if (!api) {
+      finish();
+      return;
+    }
+
     var headers = { 'Content-Type': 'application/json' };
     try {
       var token = sessionStorage.getItem('marketly_access_token');
@@ -64,11 +79,6 @@
       credentials: 'include',
       headers: headers,
       body: JSON.stringify({ business_name: bizName, goals: goals, channels: picked })
-    }).catch(function () {}).finally(function () {
-      if (window.MarketlyFX) {
-        window.MarketlyFX.confetti({ x: .5, y: .7, count: 170 });
-        setTimeout(function () { window.location.href = 'dashboard.html'; }, 1100);
-      } else { window.location.href = 'dashboard.html'; }
-    });
+    }).catch(function () {}).finally(finish);
   });
 })();

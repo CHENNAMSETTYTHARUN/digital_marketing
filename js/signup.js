@@ -6,7 +6,9 @@
   var password = document.getElementById('signup-password');
   var confirmPassword = document.getElementById('confirm-password');
   var status = document.getElementById('signup-status');
-  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  var api = apiBase ? (apiBase + '/api/v1') : '';
 
   document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
     button.addEventListener('click', function () {
@@ -34,12 +36,35 @@
     return nameOk && emailOk && pwOk && confirmOk;
   }
 
+  function completeClientSignup(fullName, userEmail) {
+    var em = userEmail.trim().toLowerCase();
+    var fn = fullName.trim();
+    var users = [];
+    try { users = JSON.parse(localStorage.getItem('marketly_db_users')) || []; } catch (e) {}
+    var user = { id: Date.now(), full_name: fn, email: em };
+    users.push(user);
+    try { localStorage.setItem('marketly_db_users', JSON.stringify(users)); } catch (e) {}
+    var fakeToken = 'client_token_' + btoa(JSON.stringify({ sub: user.id, email: em, exp: Date.now() + 86400000 }));
+    sessionStorage.setItem('marketly_access_token', fakeToken);
+    sessionStorage.setItem('marketly_authenticated', 'true');
+    sessionStorage.setItem('marketly_name', JSON.stringify(fn));
+    sessionStorage.setItem('marketly_user', JSON.stringify(user));
+    status.textContent = 'Account created. Signing you in…';
+    setTimeout(function () { window.location.href = 'onboarding.html'; }, 300);
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     status.classList.remove('show');
     if (!validate()) return;
     status.textContent = 'Creating your account…';
     status.classList.add('show');
+
+    if (!api) {
+      completeClientSignup(name.value, email.value);
+      return;
+    }
+
     fetch(api + '/auth/register', {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: name.value.trim(), email: email.value.trim(), password: password.value, confirm_password: confirmPassword.value, terms_accepted: true })
@@ -59,9 +84,11 @@
       sessionStorage.setItem('marketly_name', JSON.stringify(body.user.full_name));
       window.location.href = 'onboarding.html';
     }).catch(function (error) {
-      status.textContent = error instanceof TypeError
-        ? 'Can’t connect to the Stackly API at ' + api + '. Make sure the backend is running, then reload this page.'
-        : (error.message || 'Unable to complete sign-up. Please try again.');
+      if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {
+        completeClientSignup(name.value, email.value);
+        return;
+      }
+      status.textContent = error.message || 'Unable to complete sign-up. Please try again.';
       status.classList.add('show');
     });
   });

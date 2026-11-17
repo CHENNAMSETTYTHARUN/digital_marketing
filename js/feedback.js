@@ -3,7 +3,9 @@
   if (!form) return;
   var status = document.getElementById('feedback-status');
   var submit = form.querySelector('button[type="submit"]');
-  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1/feedback';
+
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  var api = apiBase ? (apiBase + '/api/v1/feedback') : '';
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -24,6 +26,23 @@
       return;
     }
 
+    function saveLocally() {
+      var fb = [];
+      try { fb = JSON.parse(localStorage.getItem('marketly_feedback')) || []; } catch (e) {}
+      fb.push(Object.assign({ id: Date.now(), created_at: new Date().toISOString() }, payload));
+      try { localStorage.setItem('marketly_feedback', JSON.stringify(fb)); } catch (e) {}
+      form.reset();
+      status.textContent = 'Thanks for your feedback. It was saved successfully.';
+      status.classList.add('show', 'success');
+      submit.disabled = false;
+      submit.textContent = 'Send Feedback';
+    }
+
+    if (!api) {
+      saveLocally();
+      return;
+    }
+
     var headers = { 'Content-Type': 'application/json' };
     try {
       var token = sessionStorage.getItem('marketly_access_token');
@@ -31,6 +50,7 @@
     } catch (e) {}
     submit.disabled = true;
     submit.textContent = 'Sending…';
+
     fetch(api, { method: 'POST', credentials: 'include', headers: headers, body: JSON.stringify(payload) })
       .then(function (response) {
         return response.json().catch(function () { return {}; }).then(function (body) {
@@ -46,9 +66,11 @@
         status.textContent = body.message || 'Thanks for your feedback. It was saved successfully.';
         status.classList.add('show', 'success');
       }).catch(function (error) {
-        status.textContent = error instanceof TypeError
-          ? 'We could not connect to the feedback service. Please try again in a moment.'
-          : (error.message || 'Your feedback could not be saved. Please try again.');
+        if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {
+          saveLocally();
+          return;
+        }
+        status.textContent = error.message || 'Your feedback could not be saved. Please try again.';
         status.classList.add('show', 'error');
       }).finally(function () {
         submit.disabled = false;

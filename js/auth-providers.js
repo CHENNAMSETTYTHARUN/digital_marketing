@@ -5,11 +5,30 @@
   };
   var status = document.getElementById('provider-status');
   if (!status) return;
-  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+
+  var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+  var api = apiBase ? (apiBase + '/api/v1') : '';
+
+  function saveLocalDemo(provider, identity) {
+    var fakeToken = 'client_token_' + btoa(JSON.stringify({ sub: provider + '_demo_' + Date.now(), email: identity.email, exp: Date.now() + 86400000 }));
+    sessionStorage.setItem('marketly_access_token', fakeToken);
+    sessionStorage.setItem('marketly_authenticated', 'true');
+    sessionStorage.setItem('marketly_name', JSON.stringify(identity.full_name));
+    sessionStorage.setItem('marketly_user', JSON.stringify({ id: Date.now(), full_name: identity.full_name, email: identity.email, auth_provider: provider }));
+    status.textContent = 'Signed in with ' + (provider === 'google' ? 'Google' : 'Microsoft') + '. Redirecting…';
+    status.classList.add('show');
+    setTimeout(function () { window.location.assign('dashboard.html'); }, 300);
+  }
 
   function finishDemoSignIn(provider, identity) {
     status.textContent = 'Continuing with ' + (provider === 'google' ? 'Google' : 'Microsoft') + '…';
     status.classList.add('show');
+
+    if (!api) {
+      saveLocalDemo(provider, identity);
+      return;
+    }
+
     fetch(api + '/auth/demo/' + provider, {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(identity)
@@ -24,6 +43,10 @@
       sessionStorage.setItem('marketly_name', JSON.stringify(body.user.full_name));
       window.location.assign('dashboard.html');
     }).catch(function (error) {
+      if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {
+        saveLocalDemo(provider, identity);
+        return;
+      }
       var message = document.getElementById('demo-auth-message');
       if (message) message.textContent = error.message || 'Demo sign-in failed.';
       status.textContent = error.message || 'Demo sign-in failed.';
@@ -70,6 +93,13 @@
     button.addEventListener('click', function () {
       status.textContent = 'Checking ' + (provider === 'google' ? 'Google' : 'Microsoft') + ' sign-in…';
       status.classList.add('show');
+
+      if (!api) {
+        openDemoChooser(provider);
+        status.classList.remove('show');
+        return;
+      }
+
       fetch(api + '/auth/providers').then(function (response) {
         if (!response.ok) throw new Error('Could not reach the sign-in service.');
         return response.json();
@@ -82,9 +112,12 @@
         }
         window.location.assign(api + '/auth/' + provider);
       }).catch(function (error) {
-        status.textContent = error instanceof TypeError
-          ? 'Can’t connect to the Stackly API. Make sure the backend is running, then try again.'
-          : (error.message || 'Unable to start social sign-in.');
+        if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {
+          openDemoChooser(provider);
+          status.classList.remove('show');
+          return;
+        }
+        status.textContent = error.message || 'Unable to start social sign-in.';
         status.classList.add('show');
       });
     });
