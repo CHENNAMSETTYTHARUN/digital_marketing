@@ -79,20 +79,46 @@
      navigation destination; only the explicit Sign out action ends a session. */
   var navActions = document.querySelector('.nav-actions');
   var accessToken = '';
-  try { accessToken = sessionStorage.getItem('marketly_access_token') || ''; } catch (e) {}
-  if (navActions && accessToken) {
-    var apiBase = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+  try {
+    accessToken = localStorage.getItem('marketly_access_token') || sessionStorage.getItem('marketly_access_token') || '';
+  } catch (e) {}
+  var isAuth = false;
+  try {
+    isAuth = (localStorage.getItem('marketly_authenticated') === 'true' || sessionStorage.getItem('marketly_authenticated') === 'true') && Boolean(accessToken);
+  } catch (e) {}
+
+  if (navActions && isAuth) {
+    var cachedName = 'Dashboard';
+    try {
+      var rawName = localStorage.getItem('marketly_name') || sessionStorage.getItem('marketly_name');
+      cachedName = rawName ? JSON.parse(rawName) : cachedName;
+    } catch (e) {}
+
+    function clearSession() {
+      try {
+        localStorage.removeItem('marketly_access_token');
+        localStorage.removeItem('marketly_authenticated');
+        localStorage.removeItem('marketly_name');
+        localStorage.removeItem('marketly_user');
+        sessionStorage.removeItem('marketly_access_token');
+        sessionStorage.removeItem('marketly_authenticated');
+        sessionStorage.removeItem('marketly_name');
+        sessionStorage.removeItem('marketly_user');
+      } catch (e) {}
+    }
+
     function setSignedInNav(user) {
+      var displayName = (user && user.full_name) || cachedName || 'Dashboard';
       var nameLink = navActions.querySelector('a.login');
       if (nameLink) {
         nameLink.href = 'dashboard.html';
-        nameLink.textContent = user.full_name;
-        nameLink.setAttribute('aria-label', 'Signed in as ' + user.full_name + '. Open dashboard.');
+        nameLink.textContent = displayName;
+        nameLink.setAttribute('aria-label', 'Signed in as ' + displayName + '. Open dashboard.');
       } else if (!navActions.querySelector('.session-user')) {
         var name = document.createElement('a');
         name.className = 'login session-user';
         name.href = 'dashboard.html';
-        name.textContent = user.full_name;
+        name.textContent = displayName;
         nameActionsInsert(name);
       }
       document.querySelectorAll('a[href="onboarding.html"]').forEach(function (link) {
@@ -111,40 +137,62 @@
       if (!signOut.dataset.bound) {
         signOut.dataset.bound = 'true';
         signOut.addEventListener('click', function () {
-          fetch(apiBase + '/auth/logout', { method: 'POST', credentials: 'include' }).finally(function () {
-            try { sessionStorage.removeItem('marketly_access_token'); sessionStorage.removeItem('marketly_authenticated'); sessionStorage.removeItem('marketly_name'); } catch (e) {}
+          var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+          if (apiBase) {
+            fetch(apiBase + '/api/v1/auth/logout', { method: 'POST', credentials: 'include' })
+              .catch(function () {})
+              .finally(function () {
+                clearSession();
+                window.location.replace('login.html');
+              });
+          } else {
+            clearSession();
             window.location.replace('login.html');
-          });
+          }
         });
       }
-      try { sessionStorage.setItem('marketly_name', JSON.stringify(user.full_name)); } catch (e) {}
+      try {
+        localStorage.setItem('marketly_name', JSON.stringify(displayName));
+        sessionStorage.setItem('marketly_name', JSON.stringify(displayName));
+      } catch (e) {}
     }
     function nameActionsInsert(link) { navActions.insertBefore(link, navActions.firstChild); }
-    function validateSession(token) {
-      return fetch(apiBase + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token }, credentials: 'include' }).then(function (response) {
-        if (response.status === 401) {
-          return fetch(apiBase + '/auth/refresh', { method: 'POST', credentials: 'include' }).then(function (refresh) {
-            if (!refresh.ok) throw new Error('Session expired');
-            return refresh.json();
-          }).then(function (body) {
-            sessionStorage.setItem('marketly_access_token', body.access_token);
-            return fetch(apiBase + '/auth/me', { headers: { 'Authorization': 'Bearer ' + body.access_token }, credentials: 'include' });
-          });
-        }
-        return response;
-      }).then(function (response) {
-        if (!response.ok) throw new Error('Session unavailable');
-        return response.json();
-      });
-    }
-    if (document.getElementById('user-name')) {
-      var cachedName = 'Account';
-      try { cachedName = JSON.parse(sessionStorage.getItem('marketly_name')) || cachedName; } catch (e) {}
-      setSignedInNav({ full_name: cachedName });
-    } else {
-      validateSession(accessToken).then(setSignedInNav).catch(function () {
-        try { sessionStorage.removeItem('marketly_access_token'); sessionStorage.removeItem('marketly_authenticated'); sessionStorage.removeItem('marketly_name'); } catch (e) {}
-      });
+
+    // Render signed-in state immediately so navigation is seamless without any delay or flicker
+    setSignedInNav({ full_name: cachedName });
+
+    // Background validation only if live backend configured and not a client token
+    var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
+    if (apiBase && accessToken && accessToken.indexOf('client_token_') !== 0) {
+      fetch(apiBase + '/api/v1/auth/me', { headers: { 'Authorization': 'Bearer ' + accessToken }, credentials: 'include' })
+        .then(function (response) {
+          if (response.status === 401) {
+            return fetch(apiBase + '/api/v1/auth/refresh', { method: 'POST', credentials: 'include' })
+              .then(function (res) {
+                if (!res.ok) throw new Error('Session expired');
+                return res.json();
+              })
+              .then(function (body) {
+                try {
+                  localStorage.setItem('marketly_access_token', body.access_token);
+                  sessionStorage.setItem('marketly_access_token', body.access_token);
+                } catch (e) {}
+                return fetch(apiBase + '/api/v1/auth/me', { headers: { 'Authorization': 'Bearer ' + body.access_token }, credentials: 'include' }).then(function (r) { return r.json(); });
+              });
+          }
+          if (response.ok) return response.json();
+          return null;
+        })
+        .then(function (user) {
+          if (user && user.full_name) setSignedInNav(user);
+        })
+        .catch(function (err) {
+          // Never log out on network or offline errors. Only explicit session expiration causes logout.
+          if (err && err.message === 'Session expired') {
+            clearSession();
+            window.location.replace('login.html');
+          }
+        });
     }
   }
 

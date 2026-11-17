@@ -9,12 +9,28 @@
   var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
   var api = apiBase ? (apiBase + '/api/v1') : '';
 
+  function saveSession(token, name, user) {
+    try {
+      if (token) {
+        localStorage.setItem('marketly_access_token', token);
+        sessionStorage.setItem('marketly_access_token', token);
+      }
+      localStorage.setItem('marketly_authenticated', 'true');
+      sessionStorage.setItem('marketly_authenticated', 'true');
+      if (name) {
+        localStorage.setItem('marketly_name', JSON.stringify(name));
+        sessionStorage.setItem('marketly_name', JSON.stringify(name));
+      }
+      if (user) {
+        localStorage.setItem('marketly_user', JSON.stringify(user));
+        sessionStorage.setItem('marketly_user', JSON.stringify(user));
+      }
+    } catch (e) {}
+  }
+
   function saveLocalDemo(provider, identity) {
     var fakeToken = 'client_token_' + btoa(JSON.stringify({ sub: provider + '_demo_' + Date.now(), email: identity.email, exp: Date.now() + 86400000 }));
-    sessionStorage.setItem('marketly_access_token', fakeToken);
-    sessionStorage.setItem('marketly_authenticated', 'true');
-    sessionStorage.setItem('marketly_name', JSON.stringify(identity.full_name));
-    sessionStorage.setItem('marketly_user', JSON.stringify({ id: Date.now(), full_name: identity.full_name, email: identity.email, auth_provider: provider }));
+    saveSession(fakeToken, identity.full_name, { id: Date.now(), full_name: identity.full_name, email: identity.email, auth_provider: provider });
     status.textContent = 'Signed in with ' + (provider === 'google' ? 'Google' : 'Microsoft') + '. Redirecting…';
     status.classList.add('show');
     setTimeout(function () { window.location.assign('dashboard.html'); }, 300);
@@ -38,9 +54,7 @@
         return body;
       });
     }).then(function (body) {
-      sessionStorage.setItem('marketly_access_token', body.access_token);
-      sessionStorage.setItem('marketly_authenticated', 'true');
-      sessionStorage.setItem('marketly_name', JSON.stringify(body.user.full_name));
+      saveSession(body.access_token, body.user.full_name, body.user);
       window.location.assign('dashboard.html');
     }).catch(function (error) {
       if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {

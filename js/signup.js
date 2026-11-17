@@ -10,6 +10,25 @@
   var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
   var api = apiBase ? (apiBase + '/api/v1') : '';
 
+  function saveSession(token, fullName, user) {
+    try {
+      if (token) {
+        localStorage.setItem('marketly_access_token', token);
+        sessionStorage.setItem('marketly_access_token', token);
+      }
+      localStorage.setItem('marketly_authenticated', 'true');
+      sessionStorage.setItem('marketly_authenticated', 'true');
+      if (fullName) {
+        localStorage.setItem('marketly_name', JSON.stringify(fullName));
+        sessionStorage.setItem('marketly_name', JSON.stringify(fullName));
+      }
+      if (user) {
+        localStorage.setItem('marketly_user', JSON.stringify(user));
+        sessionStorage.setItem('marketly_user', JSON.stringify(user));
+      }
+    } catch (e) {}
+  }
+
   document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
     button.addEventListener('click', function () {
       var input = document.getElementById(button.getAttribute('data-toggle-password'));
@@ -45,10 +64,7 @@
     users.push(user);
     try { localStorage.setItem('marketly_db_users', JSON.stringify(users)); } catch (e) {}
     var fakeToken = 'client_token_' + btoa(JSON.stringify({ sub: user.id, email: em, exp: Date.now() + 86400000 }));
-    sessionStorage.setItem('marketly_access_token', fakeToken);
-    sessionStorage.setItem('marketly_authenticated', 'true');
-    sessionStorage.setItem('marketly_name', JSON.stringify(fn));
-    sessionStorage.setItem('marketly_user', JSON.stringify(user));
+    saveSession(fakeToken, fn, user);
     status.textContent = 'Account created. Signing you in…';
     setTimeout(function () { window.location.href = 'onboarding.html'; }, 300);
   }
@@ -79,9 +95,7 @@
     }).then(function (response) {
       return response.json().then(function (body) { if (!response.ok) throw new Error(body.detail || 'Account created, but sign-in failed. Please sign in.'); return body; });
     }).then(function (body) {
-      sessionStorage.setItem('marketly_access_token', body.access_token);
-      sessionStorage.setItem('marketly_authenticated', 'true');
-      sessionStorage.setItem('marketly_name', JSON.stringify(body.user.full_name));
+      saveSession(body.access_token, body.user.full_name, body.user);
       window.location.href = 'onboarding.html';
     }).catch(function (error) {
       if (error instanceof TypeError || (error.message && error.message.toLowerCase().indexOf('failed to fetch') !== -1)) {

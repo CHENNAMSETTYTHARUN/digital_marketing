@@ -7,6 +7,25 @@
   var status = document.getElementById('form-status');
   var toggle = document.getElementById('toggle-pw');
 
+  function saveSession(token, name, user) {
+    try {
+      if (token) {
+        localStorage.setItem('marketly_access_token', token);
+        sessionStorage.setItem('marketly_access_token', token);
+      }
+      localStorage.setItem('marketly_authenticated', 'true');
+      sessionStorage.setItem('marketly_authenticated', 'true');
+      if (name) {
+        localStorage.setItem('marketly_name', JSON.stringify(name));
+        sessionStorage.setItem('marketly_name', JSON.stringify(name));
+      }
+      if (user) {
+        localStorage.setItem('marketly_user', JSON.stringify(user));
+        sessionStorage.setItem('marketly_user', JSON.stringify(user));
+      }
+    } catch (e) {}
+  }
+
   // Pre-fill email if passed in query string (clean up URL query afterwards)
   try {
     var params = new URLSearchParams(window.location.search);
@@ -23,9 +42,18 @@
     var fragment = new URLSearchParams(window.location.hash.slice(1));
     var oauthToken = fragment.get('access_token');
     if (oauthToken) {
-      sessionStorage.setItem('marketly_access_token', oauthToken);
-      sessionStorage.setItem('marketly_authenticated', 'true');
+      saveSession(oauthToken, null, null);
       history.replaceState(null, '', window.location.pathname + window.location.search);
+      window.location.replace('dashboard.html');
+      return;
+    }
+  } catch (e) {}
+
+  // If already authenticated and not explicitly signing out, proceed to dashboard
+  try {
+    var existingToken = localStorage.getItem('marketly_access_token') || sessionStorage.getItem('marketly_access_token');
+    var isAuth = localStorage.getItem('marketly_authenticated') === 'true' || sessionStorage.getItem('marketly_authenticated') === 'true';
+    if (existingToken && isAuth && !window.location.search.includes('signout')) {
       window.location.replace('dashboard.html');
       return;
     }
@@ -71,10 +99,7 @@
       try { localStorage.setItem('marketly_db_users', JSON.stringify(users)); } catch (e) {}
     }
     var fakeToken = 'client_token_' + btoa(JSON.stringify({ sub: existing.id, email: em, exp: Date.now() + 86400000 }));
-    sessionStorage.setItem('marketly_access_token', fakeToken);
-    sessionStorage.setItem('marketly_authenticated', 'true');
-    sessionStorage.setItem('marketly_name', JSON.stringify(fullName));
-    sessionStorage.setItem('marketly_user', JSON.stringify(existing));
+    saveSession(fakeToken, fullName, existing);
     status.textContent = 'Signed in successfully. Redirecting…';
     status.classList.add('show');
     setTimeout(function () { window.location.href = 'dashboard.html'; }, 300);
@@ -104,9 +129,7 @@
     }).then(function (res) {
       return res.json().then(function (body) { if (!res.ok) throw new Error(body.detail || 'Sign in failed.'); return body; });
     }).then(function (body) {
-      sessionStorage.setItem('marketly_access_token', body.access_token);
-      sessionStorage.setItem('marketly_authenticated', 'true');
-      sessionStorage.setItem('marketly_name', JSON.stringify(body.user.full_name));
+      saveSession(body.access_token, body.user.full_name, body.user);
       window.location.href = 'dashboard.html';
     }).catch(function (err) {
       if (err instanceof TypeError || (err.message && err.message.toLowerCase().indexOf('failed to fetch') !== -1)) {

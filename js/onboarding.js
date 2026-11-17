@@ -65,7 +65,7 @@
 
     var headers = { 'Content-Type': 'application/json' };
     try {
-      var token = sessionStorage.getItem('marketly_access_token');
+      var token = localStorage.getItem('marketly_access_token') || sessionStorage.getItem('marketly_access_token');
       if (token) headers['Authorization'] = 'Bearer ' + token;
     } catch (e) {}
 

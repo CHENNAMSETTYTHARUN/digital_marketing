@@ -18,12 +18,16 @@
   }
 
   try {
-    var name = JSON.parse(sessionStorage.getItem('marketly_name'));
+    var rawName = localStorage.getItem('marketly_name') || sessionStorage.getItem('marketly_name');
+    var name = rawName ? JSON.parse(rawName) : '';
     if (name) updateNav(name);
   } catch (e) {}
 
   var token = '';
-  try { token = sessionStorage.getItem('marketly_access_token') || ''; } catch (e) {}
+  try {
+    token = localStorage.getItem('marketly_access_token') || sessionStorage.getItem('marketly_access_token') || '';
+  } catch (e) {}
+
   if (!token || token.indexOf('client_token_') === 0) return;
 
   var apiBase = window.MARKETLY_API_BASE || (location.protocol === 'https:' ? '' : 'http://127.0.0.1:8000');
@@ -37,6 +41,9 @@
   }).then(function (user) {
     if (!user || !user.full_name) return;
     updateNav(user.full_name);
-    sessionStorage.setItem('marketly_name', JSON.stringify(user.full_name));
+    try {
+      localStorage.setItem('marketly_name', JSON.stringify(user.full_name));
+      sessionStorage.setItem('marketly_name', JSON.stringify(user.full_name));
+    } catch (e) {}
   }).catch(function () {});
 })();
