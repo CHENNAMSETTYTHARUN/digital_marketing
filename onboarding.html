@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get set up — Marketly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <meta name="theme-color" content="#6366f1">
+  <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("anim")</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="index.html" aria-label="Stackly home">STACKLY</a>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="campaigns.html">Campaigns</a></li>
+          <li><a href="insights.html">Insights</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-dark btn-sm" href="onboarding.html" aria-current="page">Get Started</a>
+        <button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main" id="main">
+    <div class="wrap">
+      <div class="onboard-head">
+        <div class="page-head">
+          <h1>Let’s get your marketing set up</h1>
+          <p>A few simple steps to start understanding your campaigns.</p>
+        </div>
+        <img class="head-art" src="images/banner-setup.svg" alt="" width="480" height="220">
+      </div>
+
+      <div class="setup">
+        <!-- Step 1 -->
+        <form class="setup-step" id="step1" novalidate>
+          <span class="step-no">01</span>
+          <h2>Tell us about your business</h2>
+
+          <div class="field">
+            <label for="business">Business name</label>
+            <input id="business" name="business" type="text" placeholder="Enter your business name" autocomplete="organization" aria-describedby="business-error">
+            <p class="error" id="business-error" role="alert"></p>
+          </div>
+
+          <fieldset>
+            <legend>What do you want to improve?</legend>
+            <div class="option-list">
+              <label class="option"><input type="checkbox" name="goal" value="Get more leads"><span class="box"></span>Get more leads</label>
+              <label class="option"><input type="checkbox" name="goal" value="Increase sales"><span class="box"></span>Increase sales</label>
+              <label class="option"><input type="checkbox" name="goal" value="Grow awareness"><span class="box"></span>Grow awareness</label>
+            </div>
+            <p class="error" id="goal-error" role="alert"></p>
+          </fieldset>
+
+          <button class="btn btn-dark" type="submit">Continue</button>
+        </form>
+
+        <!-- Step 2 -->
+        <form class="setup-step is-locked" id="step2" novalidate>
+          <span class="step-no">02</span>
+          <h2 id="step2-title" tabindex="-1">Choose your channels</h2>
+
+          <fieldset id="channels" disabled style="margin-top:0">
+            <legend class="sr-only" style="position:absolute;left:-999px">Channels</legend>
+            <div class="option-grid">
+              <label class="option"><input type="checkbox" name="channel" value="Instagram"><span class="box"></span>Instagram</label>
+              <label class="option"><input type="checkbox" name="channel" value="Google Ads"><span class="box"></span>Google Ads</label>
+              <label class="option"><input type="checkbox" name="channel" value="Facebook"><span class="box"></span>Facebook</label>
+              <label class="option"><input type="checkbox" name="channel" value="Email"><span class="box"></span>Email</label>
+            </div>
+            <p class="error" id="channel-error" role="alert"></p>
+            <button class="btn btn-dark" type="submit">Connect &amp; Continue</button>
+          </fieldset>
+          <p class="note">You can change these choices later.</p>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/onboarding.js"></script>
+</body>
+</html>

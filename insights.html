@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Insights — Marketly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <meta name="theme-color" content="#6366f1">
+  <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("anim")</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="index.html" aria-label="Stackly home">STACKLY</a>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="campaigns.html">Campaigns</a></li>
+          <li><a href="insights.html" aria-current="page">Insights</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-dark btn-sm" href="onboarding.html">Get Started</a>
+        <button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main" id="main">
+    <div class="wrap">
+      <div class="page-head">
+        <h1>Marketing insights</h1>
+        <p>Simple answers to help you decide what to do next.</p>
+      </div>
+
+      <section class="ins-section" aria-labelledby="glance-h">
+        <h2 id="glance-h">Your marketing at a glance</h2>
+        <div class="glance">
+          <div class="card"><img class="ico" src="images/icon-target.svg" alt="" width="44" height="44"><strong>42%</strong><p>of your leads come from Instagram</p><small>↑ 12% vs last week</small></div>
+          <div class="card"><img class="ico" src="images/icon-paid.svg" alt="" width="44" height="44"><strong>₹58</strong><p>average cost per lead</p><small>↓ 8% vs last week</small></div>
+          <div class="card"><img class="ico" src="images/icon-roi.svg" alt="" width="44" height="44"><strong>+38%</strong><p>overall campaign ROI</p><small>↑ 6% vs last week</small></div>
+        </div>
+      </section>
+
+      <section class="ins-section" aria-labelledby="happened-h">
+        <h2 id="happened-h">What happened</h2>
+        <div class="panel happened">
+          <img class="happened-img" src="images/banner-insight.svg" alt="" width="480" height="220">
+          <div>
+            <h3>Instagram is your strongest channel</h3>
+            <p>It generated 42% of your total leads this week — more than any other channel.</p>
+          </div>
+          <a class="btn btn-outline" href="campaigns.html">View Campaigns</a>
+        </div>
+      </section>
+
+      <section class="ins-section" aria-labelledby="matters-h">
+        <h2 id="matters-h">Why it matters</h2>
+        <div class="matters">
+          <div class="panel">
+            <h3>Summer Sale is performing well</h3>
+            <p>Your campaign is generating 18% more leads than your average campaign.</p>
+            <p class="act">This could be a good campaign to scale.</p>
+          </div>
+          <div class="panel attention">
+            <h3>Google Ads needs attention</h3>
+            <p>Cost per lead increased by 21% this week.</p>
+            <p class="act">Review the campaign before increasing spend.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ins-section" aria-labelledby="next-h">
+        <h2 id="next-h">What you can do next</h2>
+        <div class="next-list">
+          <div class="next"><div><h3>Review Google Ads</h3><p>Check which keywords and ads are driving the higher cost per lead.</p></div><a class="btn btn-dark" href="campaigns.html#active">Review Campaign</a></div>
+          <div class="next"><div><h3>Scale Instagram</h3><p>Consider increasing budget on your strongest lead-generating channel.</p></div><a class="btn btn-dark" href="campaigns.html">View Campaigns</a></div>
+          <div class="next"><div><h3>Check Summer Sale</h3><p>Review what is driving the strong performance and reuse the winning approach.</p></div><a class="btn btn-dark" href="campaigns.html#active">View Campaigns</a></div>
+        </div>
+      </section>
+
+      <p class="footnote">Insights are based on your connected campaign data.</p>
+    </div>
+  </main>
+  <script src="js/main.js"></script>
+  <script src="js/fx.js"></script>
+</body>
+</html>

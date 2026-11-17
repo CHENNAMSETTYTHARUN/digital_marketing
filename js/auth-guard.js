@@ -1,0 +1,26 @@
+// Restrict dashboard access to visitors who have signed in during this session.
+(function () {
+  var token = '';
+  try { token = sessionStorage.getItem('marketly_access_token') || ''; } catch (e) {}
+  if (!token) { window.location.replace('login.html'); return; }
+  var api = (window.MARKETLY_API_BASE || 'http://127.0.0.1:8000') + '/api/v1';
+  function validate(value) {
+    return fetch(api + '/auth/me', { headers: { 'Authorization': 'Bearer ' + value }, credentials: 'include' });
+  }
+  validate(token).then(function (response) {
+    if (response.status !== 401) {
+      if (!response.ok) throw new Error('Session unavailable');
+      return;
+    }
+    return fetch(api + '/auth/refresh', { method: 'POST', credentials: 'include' }).then(function (refreshed) {
+      if (!refreshed.ok) throw new Error('Session expired');
+      return refreshed.json();
+    }).then(function (body) {
+      sessionStorage.setItem('marketly_access_token', body.access_token);
+      return validate(body.access_token).then(function (checked) { if (!checked.ok) throw new Error('Session expired'); });
+    });
+  }).catch(function () {
+    try { sessionStorage.removeItem('marketly_access_token'); sessionStorage.removeItem('marketly_authenticated'); } catch (e) {}
+    window.location.replace('login.html');
+  });
+})();

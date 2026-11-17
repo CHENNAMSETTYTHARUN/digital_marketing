@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in — Marketly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <meta name="theme-color" content="#6366f1">
+  <script>if(location.protocol==='file:')location.replace('http://127.0.0.1:5500/login.html'+location.search+location.hash)</script>
+  <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("anim")</script>
+</head>
+<body>
+  <div class="auth">
+    <main class="auth-main" id="main">
+      <a class="logo" href="index.html" aria-label="Stackly home">STACKLY</a>
+
+      <div class="auth-body">
+        <h1>Welcome Back</h1>
+        <p class="lead">Sign in to see how your marketing is performing.</p>
+
+        <form class="form" id="login-form" novalidate>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" placeholder="Enter your email" autocomplete="email" aria-describedby="email-error" required>
+            <p class="error" id="email-error" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" aria-describedby="password-error" required>
+              <button class="toggle-pw" id="toggle-pw" type="button" aria-pressed="false" aria-controls="password">Show</button>
+            </div>
+            <p class="error" id="password-error" role="alert"></p>
+          </div>
+
+          <p class="form-status" id="form-status" role="status"></p>
+          <button class="btn btn-dark" type="submit">Sign In</button>
+        </form>
+
+        <div class="auth-divider"><span>or continue with</span></div>
+        <div class="auth-providers">
+          <button class="auth-provider" id="google-login" type="button"><span class="provider-mark google-mark">G</span>Google</button>
+          <button class="auth-provider" id="microsoft-login" type="button"><span class="provider-mark microsoft-mark"><i></i><i></i><i></i><i></i></span>Microsoft</button>
+        </div>
+        <p class="form-status" id="provider-status" role="status"></p>
+
+        <div class="auth-links">
+          <span>Don’t have an account? <a href="signup.html">Sign Up</a></span>
+        </div>
+      </div>
+    </main>
+
+    <aside class="auth-aside" aria-hidden="true">
+      <div class="hero-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="grid"></span><i class="spark s1"></i><i class="spark s2"></i><i class="spark s3"></i><i class="spark s4"></i></div>
+      <img class="aside-art" src="images/illus-analytics.svg" alt="" width="900" height="650">
+      <div class="aside-card">
+        <h2>Every campaign, one clear view.</h2>
+        <p>Pick up where you left off and see what is working today.</p>
+        <div class="mini">
+          <b style="height:40%"></b><b style="height:55%"></b><b style="height:48%"></b><b style="height:66%"></b><b style="height:60%"></b><b style="height:80%"></b><b style="height:92%"></b>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <script src="js/main.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/login.js"></script>
+  <script src="js/auth-providers.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campaigns — Marketly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <meta name="theme-color" content="#6366f1">
+  <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("anim")</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="index.html" aria-label="Stackly home">STACKLY</a>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="campaigns.html" aria-current="page">Campaigns</a></li>
+          <li><a href="insights.html">Insights</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-dark btn-sm" href="onboarding.html">Get Started</a>
+        <button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main" id="main">
+    <div class="wrap">
+      <div class="page-bar">
+        <div class="page-head">
+          <h1>Campaigns</h1>
+          <p>Track the campaigns that matter to your business.</p>
+        </div>
+        <img class="head-art" src="images/banner-paid.svg" alt="" width="480" height="240"><button class="btn btn-dark" type="button" id="create-btn">+ Create Campaign</button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Filter campaigns">
+        <button class="tab" role="tab" id="tab-all" data-filter="all" aria-selected="true" aria-controls="campaign-list">All</button>
+        <button class="tab" role="tab" id="tab-active" data-filter="active" aria-selected="false" aria-controls="campaign-list" tabindex="-1">Active</button>
+        <button class="tab" role="tab" id="tab-completed" data-filter="completed" aria-selected="false" aria-controls="campaign-list" tabindex="-1">Completed</button>
+      </div>
+
+      <div class="campaign-list" id="campaign-list" role="tabpanel" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <!-- Campaign details -->
+  <dialog id="details-dlg" aria-labelledby="details-title">
+    <div class="dlg">
+      <h2 id="details-title"></h2>
+      <p class="sub" id="details-sub"></p>
+      <dl>
+        <div><dt>Spent</dt><dd id="d-spent"></dd></div>
+        <div><dt>Leads</dt><dd id="d-leads"></dd></div>
+        <div><dt>Cost per lead</dt><dd id="d-cpl"></dd></div>
+        <div><dt>ROI</dt><dd id="d-roi"></dd></div>
+      </dl>
+      <div class="actions"><button class="btn btn-dark" type="button" data-close>Close</button></div>
+    </div>
+  </dialog>
+
+  <!-- Create campaign -->
+  <dialog id="create-dlg" aria-labelledby="create-title">
+    <form class="dlg" id="create-form" novalidate>
+      <h2 id="create-title">Create campaign</h2>
+      <p class="sub">Name it and pick where it will run. You can add details later.</p>
+      <div class="field">
+        <label for="c-name">Campaign name</label>
+        <input id="c-name" type="text" placeholder="Enter a campaign name" autocomplete="off">
+        <p class="error" id="c-name-error" role="alert"></p>
+      </div>
+      <fieldset>
+        <legend>Channels</legend>
+        <div class="option-grid">
+          <label class="option"><input type="checkbox" name="c-channel" value="Instagram"><span class="box"></span>Instagram</label>
+          <label class="option"><input type="checkbox" name="c-channel" value="Google Ads"><span class="box"></span>Google Ads</label>
+          <label class="option"><input type="checkbox" name="c-channel" value="Facebook"><span class="box"></span>Facebook</label>
+          <label class="option"><input type="checkbox" name="c-channel" value="Email"><span class="box"></span>Email</label>
+        </div>
+        <p class="error" id="c-channel-error" role="alert"></p>
+      </fieldset>
+      <div class="actions">
+        <button class="btn btn-outline" type="button" data-close>Cancel</button>
+        <button class="btn btn-dark" type="submit">Create Campaign</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="js/main.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/campaigns.js"></script>
+</body>
+</html>
